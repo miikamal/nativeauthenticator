@@ -327,7 +327,7 @@ class NativeAuthenticator(Authenticator):
             match = re.match(self.allow_self_approval_for, user_info.email)
             if match:
                 url = self.generate_approval_url(username)
-                self.send_approval_email(user_info.email, url)
+                self.send_approval_email_csc(user_info.email, url)
                 user_info.login_email_sent = True
 
         self.db.add(user_info)
@@ -355,6 +355,28 @@ class NativeAuthenticator(Authenticator):
                 )
             else:
                 s = smtplib.SMTP("localhost")
+            s.send_message(msg)
+            s.quit()
+        except Exception as e:
+            self.log.error(e)
+            raise web.HTTPError(
+                503,
+                reason="Self-authorization email could not "
+                + "be sent. Please contact the JupyterHub "
+                + "admin about this.",
+            )
+
+    def send_approval_email_csc(self, dest, url):
+        msg = EmailMessage()
+        msg["From"] = self.self_approval_email[0]
+        # CSC requires use of Sender address
+        msg["Sender"] = self.self_approval_email[0]
+        msg["Subject"] = self.self_approval_email[1]
+        msg.set_content(self.self_approval_email[2].format(approval_url=url))
+        msg["To"] = dest
+        try:
+            # No authentication required at CSC
+            s = smtplib.SMTP(self.self_approval_server["url"])
             s.send_message(msg)
             s.quit()
         except Exception as e:

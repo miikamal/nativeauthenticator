@@ -41,3 +41,17 @@ Then run tests with pytest:
 ```
 pytest
 ```
+
+## What is different in this fork?
+
+This fork supports sending self-serve approval emails from the smtp server provided by [CSC](https://docs.csc.fi/cloud/pouta/additional-services/). Works by following the [official documentation](https://native-authenticator.readthedocs.io/en/latest/options.html#allow-self-serve-approval) but changing the self_approval_server configuration to 
+
+`c.NativeAuthenticator.self_approval_server = {'url': 'smtp.pouta.csc.fi'}`
+
+## Installation 
+
+```
+git clone https://github.com/miikamal/nativeauthenticator.git
+cd nativeauthenticator
+pip install -e .
+```
